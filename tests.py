@@ -1,24 +1,104 @@
-from main import BooksCollector
+# класс TestBooksCollector объединяет набор тестов для приложения BooksCollector
 
-# класс TestBooksCollector объединяет набор тестов, которыми мы покрываем наше приложение BooksCollector
-# обязательно указывать префикс Test
+import pytest
+
+
 class TestBooksCollector:
 
-    # пример теста:
-    # обязательно указывать префикс test_
-    # дальше идет название метода, который тестируем add_new_book_
-    # затем, что тестируем add_two_books - добавление двух книг
-    def test_add_new_book_add_two_books(self):
-        # создаем экземпляр (объект) класса BooksCollector
-        collector = BooksCollector()
+    @pytest.mark.parametrize(
+        'name, genre',
+        [
+            ['Твин Пикс', 'Детективы']
+        ]
+    )
+    def test_add_new_book_add_book_true(self, collector, name, genre):
+        # проверка добавления новой книги с жанром в списке жанров и с кол-вом символов <= 40
+        assert collector.books_genre[name] == genre
 
-        # добавляем две книги
-        collector.add_new_book('Гордость и предубеждение и зомби')
-        collector.add_new_book('Что делать, если ваш кот хочет вас убить')
+    @pytest.mark.parametrize(
+        'name, genre',
+        [
+            ['Вялые паруса', 'Драма'],
+            ['Консервный ряд', 'Жанр для проверки на количество символов > 40']
+        ]
+    )
+    def test_add_new_book_add_book_false(self, collector, name, genre):
+        # проверка добавления новой книги с жанром не в списке жанров или с кол-вом символов > 40
+        assert collector.books_genre[name] != genre
 
-        # проверяем, что добавилось именно две
-        # словарь books_rating, который нам возвращает метод get_books_rating, имеет длину 2
-        assert len(collector.get_books_rating()) == 2
+    @pytest.mark.parametrize(
+        'name, genre',
+        [
+            ['Твин Пикс', 'Детективы']
+        ]
+    )
+    def test_set_book_genre_true(self, collector, name, genre):
+        # проверяем, что книге задан жанр, если она есть в books_genre и её жанр входит в список genre
+        assert genre == collector.books_genre[name]
 
-    # напиши свои тесты ниже
-    # чтобы тесты были независимыми в каждом из них создавай отдельный экземпляр класса BooksCollector()
+    @pytest.mark.parametrize(
+        'name, genre',
+        [
+            ['Твин Пикс', 'Детективы']
+        ]
+    )
+    def test_get_books_with_specific_genre_true(self, collector, name, genre):
+        # проверяем получение списка книг с определенным жанром
+        assert genre in collector.books_genre[name]
+
+    @pytest.mark.parametrize(
+        'name, genre',
+        [
+            ['Сборник Агаты Кристи', 'Детективы']
+        ]
+    )
+    def test_get_books_genre_true(self, collector, name, genre):
+        # проверяем получение словаря
+        assert collector.get_books_genre() is not None
+
+    @pytest.mark.parametrize(
+        'name, genre',
+        [
+            ['Твин Пикс', 'Детективы']
+        ]
+    )
+    def test_get_books_for_children_true(self, collector, name, genre):
+        # проверяем, что книги с возрастным рейтингом отсутствуют в списке книг для детей
+        collector.genre_age_rating.append(name)
+        assert genre not in collector.get_books_for_children()
+
+    @pytest.mark.parametrize(
+        'name, genre',
+        [
+            ['Твин Пикс', 'Детективы']
+        ]
+    )
+    def test_add_book_in_favorites_add_book_once_true(self, collector, name, genre):
+        # добавляем одну и ту же книгу в избранное два раза
+        # проверяем, что она добавится всего один раз
+        collector.add_book_in_favorites(name)
+        collector.add_book_in_favorites(name)
+        assert collector.favorites.count(name) == 1
+
+    @pytest.mark.parametrize(
+        'name, genre',
+        [
+            ['Оно', 'Ужасы']
+        ]
+    )
+    def test_get_list_of_favorites_books_true(self, collector, name, genre):
+        # добавляем книгу в избранное и проверяем вывод списка избранных книг
+        collector.add_book_in_favorites(name)
+        assert collector.get_list_of_favorites_books() is not None
+
+    @pytest.mark.parametrize(
+        'name, genre',
+        [
+            ['Супер Марио', 'Мультфильмы']
+        ]
+    )
+    def test_delete_book_from_favorites_true(self, collector, name, genre):
+        # добавляем книгу в избранное и проверяем её удаление
+        collector.add_book_in_favorites(name)
+        collector.delete_book_from_favorites(name)
+        assert name not in collector.favorites
